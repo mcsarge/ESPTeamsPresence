@@ -108,7 +108,7 @@ void handleFileList() {
 			output += "{\"type\":\"";
 			output += (file.isDirectory()) ? "dir" : "file";
 			output += "\",\"name\":\"";
-			output += String(file.name()).substring(1);
+			output += String(file.name()).substring(0);
 			output += "\"}";
 			file = root.openNextFile();
 		}
@@ -159,7 +159,9 @@ bool handleFileRead(String path) {
 		if (exists(pathWithGz))	{
 			path += ".gz";
 		}
+		DBG_PRINTLN("handleFileRead: trying to read file");
 		File file = SPIFFS.open(path, "r");
+		DBG_PRINTLN("handleFileRead: going to stream file");
 		server.streamFile(file, contentType);
 		file.close();
 		return true;

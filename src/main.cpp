@@ -83,23 +83,24 @@ const char* rootCACertificateGraph = rootCACertificate;
 
 
 // IotWebConf
+String ChipId = String((uint32_t)ESP.getEfuseMac(), HEX);
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
-const char thingName[] = "ESPTeamsPresence";
+const String thingName = "TeamsPres-" + ChipId;
 // -- Initial password to connect to the Thing, when it creates an own Access Point.
 const char wifiInitialApPassword[] = "presence";
 
 DNSServer dnsServer;
 WebServer server(80);
 
-IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword);
+IotWebConf iotWebConf(thingName.c_str(), &dnsServer, &server, wifiInitialApPassword);
 
 // Add parameter
 #define STRING_LEN 64
 #define INTEGER_LEN 16
-char paramClientIdValue[STRING_LEN];
-char paramTenantValue[STRING_LEN];
-char paramPollIntervalValue[INTEGER_LEN];
-char paramNumLedsValue[INTEGER_LEN];
+char paramClientIdValue[STRING_LEN] = "3837bbf0-30fb-47ad-bce8-f460ba9880c3";
+char paramTenantValue[STRING_LEN] = "marathonconsulting.onmicrosoft.com";
+char paramPollIntervalValue[INTEGER_LEN] = "30";
+char paramNumLedsValue[INTEGER_LEN] = "16";
 IotWebConfSeparator separator = IotWebConfSeparator();
 IotWebConfParameter paramClientId = IotWebConfParameter("Client-ID (Generic ID: 3837bbf0-30fb-47ad-bce8-f460ba9880c3)", "clientId", paramClientIdValue, STRING_LEN, "text", "e.g. 3837bbf0-30fb-47ad-bce8-f460ba9880c3", "3837bbf0-30fb-47ad-bce8-f460ba9880c3");
 IotWebConfParameter paramTenant = IotWebConfParameter("Tenant hostname / ID", "tenantId", paramTenantValue, STRING_LEN, "text", "e.g. contoso.onmicrosoft.com");
@@ -260,7 +261,7 @@ void setAnimation(uint8_t segment, uint8_t mode = FX_MODE_STATIC, uint32_t color
 	// Support only one segment for the moment
 	if (segment == 0) {
 		startLed = 0;
-		endLed = numberLeds;
+		endLed = numberLeds-1;
 	}
 	Serial.printf("setAnimation: %d, %d-%d, Mode: %d, Color: %d, Speed: %d\n", segment, startLed, endLed, mode, color, speed);
 	ws2812fx.setSegment(segment, startLed, endLed, mode, color, speed, reverse);
@@ -331,7 +332,7 @@ void pollForToken() {
 		const char* _error_description = responseDoc["error_description"];
 
 		if (strcmp(_error, "authorization_pending") == 0) {
-			Serial.printf("pollForToken() - Wating for authorization by user: %s\n\n", _error_description);
+			Serial.printf("pollForToken() - Waiting for authorization by user: %s\n\n", _error_description);
 		} else {
 			Serial.printf("pollForToken() - Unexpected error: %s, %s\n\n", _error, _error_description);
 			state = SMODEDEVICELOGINFAILED;
@@ -549,7 +550,6 @@ void customShow(void) {
 	rmt_write_sample(RMT_CHANNEL_0, pixels, numBytes, false); // channel 0
 }
 
-
 /**
  * Main functions
  */
@@ -613,8 +613,8 @@ void setup()
 
 	// server.onNotFound([](){ iotWebConf.handleNotFound(); });
 	server.onNotFound([]() {
-		iotWebConf.handleNotFound();
 		if (!handleFileRead(server.uri())) {
+			iotWebConf.handleNotFound();
 			server.send(404, "text/plain", "FileNotFound");
 		}
 	});

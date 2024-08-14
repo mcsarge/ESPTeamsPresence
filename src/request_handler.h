@@ -141,7 +141,8 @@ void handleRoot() {
 	s += "  });\n";
 	s += "}\n";
 	s += "</script>\n";
-	s += "<title>ESP32 teams presence</title></head>\n";
+	s += "<title>ESP32 teams presence</title>";
+	s += "<link rel=\"icon\" type=\"image/x-icon\" href=\"/favicon.ico\"></head>\n";
 	s += "<body><h2>ESP32 teams presence - v" + String(VERSION) + "</h2>";
 
 	s += "<section class=\"mt\"><div class=\"nes-balloon from-left\">";
@@ -201,7 +202,6 @@ void handleRoot() {
 
 	server.send(200, "text/html", s);
 }
-
 void handleGetSettings() {
 	DBG_PRINTLN("handleGetSettings()");
 	
